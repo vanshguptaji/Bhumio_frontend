@@ -10,11 +10,21 @@ export const formatPercentage = (value, decimals = 1) => {
 };
 
 export const formatDate = (date) => {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date(date));
+  if (!date) return 'N/A';
+  
+  try {
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+      return 'Invalid date';
+    }
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(dateObj);
+  } catch (error) {
+    return 'Invalid date';
+  }
 };
 
 export const getScoreColor = (score) => {

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
 import { Button } from '../components/Button';
-import { FileUpload } from '../components/FileUpload';
 import { Alert } from '../components/Alert';
 import { showSuccess, showError } from '../utils/toast';
-import { uploadDisclosurePdf } from '../api/upload.api';
 import { createProperty } from '../api/property.api';
 import { Input } from '../components/FormFields';
 
@@ -16,15 +14,17 @@ export const SellerDashboard = () => {
     city: '',
     state: '',
     zipCode: '',
-    yearBuilt: '',
-    squareFeet: '',
   });
-  const [selectedPropertyId, setSelectedPropertyId] = useState(null);
-  const [uploadingFile, setUploadingFile] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const handleCreateProperty = async (e) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.address || !formData.city || !formData.state || !formData.zipCode) {
+      showError('All fields are required');
+      return;
+    }
+    
     try {
       const result = await createProperty(formData);
       setProperties([...properties, result]);
@@ -33,8 +33,6 @@ export const SellerDashboard = () => {
         city: '',
         state: '',
         zipCode: '',
-        yearBuilt: '',
-        squareFeet: '',
       });
       setShowNewPropertyForm(false);
       showSuccess('Property created successfully');
@@ -44,23 +42,7 @@ export const SellerDashboard = () => {
   };
 
   const handleUploadDisclosure = async () => {
-    if (!selectedPropertyId || selectedFiles.length === 0) {
-      showError('Please select a property and file');
-      return;
-    }
-
-    setUploadingFile(true);
-    try {
-      for (const file of selectedFiles) {
-        await uploadDisclosurePdf(selectedPropertyId, file);
-      }
-      setSelectedFiles([]);
-      showSuccess('Disclosure document uploaded successfully');
-    } catch (error) {
-      showError('Failed to upload disclosure document');
-    } finally {
-      setUploadingFile(false);
-    }
+    showError('File upload feature is not available at this time');
   };
 
   return (
@@ -108,34 +90,14 @@ export const SellerDashboard = () => {
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Zip Code"
-                  placeholder="10001"
-                  value={formData.zipCode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, zipCode: e.target.value })
-                  }
-                  required
-                />
-                <Input
-                  label="Year Built"
-                  type="number"
-                  placeholder="2020"
-                  value={formData.yearBuilt}
-                  onChange={(e) =>
-                    setFormData({ ...formData, yearBuilt: e.target.value })
-                  }
-                />
-              </div>
               <Input
-                label="Square Feet"
-                type="number"
-                placeholder="2500"
-                value={formData.squareFeet}
+                label="Zip Code"
+                placeholder="10001"
+                value={formData.zipCode}
                 onChange={(e) =>
-                  setFormData({ ...formData, squareFeet: e.target.value })
+                  setFormData({ ...formData, zipCode: e.target.value })
                 }
+                required
               />
               <Button type="submit" fullWidth>
                 Create Property
@@ -158,44 +120,18 @@ export const SellerDashboard = () => {
               <CardContent>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <span className="text-gray-600">Year Built:</span>
-                    <span className="ml-2 font-medium">{property.yearBuilt}</span>
+                    <span className="text-gray-600">Address:</span>
+                    <span className="ml-2 font-medium">{property.address}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Square Feet:</span>
-                    <span className="ml-2 font-medium">{property.squareFeet}</span>
+                    <span className="text-gray-600">City:</span>
+                    <span className="ml-2 font-medium">{property.city}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">State:</span>
+                    <span className="ml-2 font-medium">{property.state}</span>
                   </div>
                 </div>
-
-                {selectedPropertyId === property.id && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <FileUpload
-                      label="Upload Disclosure"
-                      onFiles={setSelectedFiles}
-                      accept="application/pdf"
-                      multiple={false}
-                    />
-                    <Button
-                      onClick={handleUploadDisclosure}
-                      loading={uploadingFile}
-                      fullWidth
-                      className="mt-2"
-                    >
-                      Upload Disclosure
-                    </Button>
-                  </div>
-                )}
-
-                {selectedPropertyId !== property.id && (
-                  <Button
-                    onClick={() => setSelectedPropertyId(property.id)}
-                    fullWidth
-                    variant="outline"
-                    className="mt-4"
-                  >
-                    Upload Disclosure
-                  </Button>
-                )}
               </CardContent>
             </Card>
           ))}
